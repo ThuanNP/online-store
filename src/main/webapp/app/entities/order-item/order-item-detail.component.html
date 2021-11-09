@@ -18,7 +18,8 @@
                 </dd>
                 <dt><span jhiTranslate="storeApp.orderItem.status">Status</span></dt>
                 <dd>
-                    <span jhiTranslate="{{ 'storeApp.OrderItemStatus.' + orderItem.status }}">{{ orderItem.status }}</span>
+                    <span jhiTranslate="{{ 'storeApp.OrderItemStatus.' + orderItem.status }}">{{ orderItem.status
+                        }}</span>
                 </dd>
                 <dt><span jhiTranslate="storeApp.orderItem.product">Product</span></dt>
                 <dd>
@@ -29,20 +30,18 @@
                 <dt><span jhiTranslate="storeApp.orderItem.order">Order</span></dt>
                 <dd>
                     <div *ngIf="orderItem.order">
-                        <a [routerLink]="['/product-order', orderItem.order?.id, 'view']">{{ orderItem.order?.code }}</a>
+                        <a [routerLink]="['/product-order', orderItem.order?.id, 'view']">{{ orderItem.order?.code
+                            }}</a>
                     </div>
                 </dd>
             </dl>
 
-            <button type="submit"
-                    (click)="previousState()"
-                    class="btn btn-info">
+            <button type="submit" (click)="previousState()" class="btn btn-info">
                 <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
             </button>
 
-            <button type="button"
-                    [routerLink]="['/order-item', orderItem.id, 'edit']"
-                    class="btn btn-primary">
+            <button type="button" [routerLink]="['/order-item', orderItem.id, 'edit']"
+                *jhiHasAnyAuthority="'ROLE_ADMIN'" class="btn btn-primary">
                 <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
             </button>
         </div>

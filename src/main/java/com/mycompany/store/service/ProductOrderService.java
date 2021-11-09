@@ -2,6 +2,9 @@ package com.mycompany.store.service;
 
 import com.mycompany.store.domain.ProductOrder;
 import com.mycompany.store.repository.ProductOrderRepository;
+import com.mycompany.store.security.AuthoritiesConstants;
+import com.mycompany.store.security.SecurityUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +50,13 @@ public class ProductOrderService {
     @Transactional(readOnly = true)
     public Page<ProductOrder> findAll(Pageable pageable) {
         log.debug("Request to get all ProductOrders");
-        return productOrderRepository.findAll(pageable);
+        if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
+            return productOrderRepository.findAll(pageable);
+        } else {
+            String login = SecurityUtils.getCurrentUserLogin().orElse(null);
+            return productOrderRepository.findAllByCustomerUserLogin(login, pageable);
+        }
     }
-
 
     /**
      * Get one productOrder by id.
@@ -60,7 +67,12 @@ public class ProductOrderService {
     @Transactional(readOnly = true)
     public Optional<ProductOrder> findOne(Long id) {
         log.debug("Request to get ProductOrder : {}", id);
-        return productOrderRepository.findById(id);
+        if (SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
+            return productOrderRepository.findById(id);
+        } else {
+            String login = SecurityUtils.getCurrentUserLogin().orElse(null);
+            return productOrderRepository.findOneByIdAndCustomerUserLogin(id, login);
+        }
     }
 
     /**
