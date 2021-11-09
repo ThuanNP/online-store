@@ -2,6 +2,7 @@ package com.mycompany.store.web.rest;
 
 import com.mycompany.store.StoreApp;
 import com.mycompany.store.domain.Invoice;
+import com.mycompany.store.domain.ProductOrder;
 import com.mycompany.store.repository.InvoiceRepository;
 import com.mycompany.store.service.InvoiceService;
 
@@ -34,6 +35,9 @@ import com.mycompany.store.domain.enumeration.PaymentMethod;
 @AutoConfigureMockMvc
 @WithMockUser
 public class InvoiceResourceIT {
+
+    private static final String DEFAULT_CODE = "AAAAAAAAAA";
+    private static final String UPDATED_CODE = "BBBBBBBBBB";
 
     private static final Instant DEFAULT_DATE = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_DATE = Instant.now().truncatedTo(ChronoUnit.MILLIS);
@@ -75,12 +79,23 @@ public class InvoiceResourceIT {
      */
     public static Invoice createEntity(EntityManager em) {
         Invoice invoice = new Invoice()
+            .code(DEFAULT_CODE)
             .date(DEFAULT_DATE)
             .detail(DEFAULT_DETAIL)
             .status(DEFAULT_STATUS)
             .paymentMethod(DEFAULT_PAYMENT_METHOD)
             .paymentDate(DEFAULT_PAYMENT_DATE)
             .paymentAmount(DEFAULT_PAYMENT_AMOUNT);
+        // Add required entity
+        ProductOrder productOrder;
+        if (TestUtil.findAll(em, ProductOrder.class).isEmpty()) {
+            productOrder = ProductOrderResourceIT.createEntity(em);
+            em.persist(productOrder);
+            em.flush();
+        } else {
+            productOrder = TestUtil.findAll(em, ProductOrder.class).get(0);
+        }
+        invoice.setOrder(productOrder);
         return invoice;
     }
     /**
@@ -91,12 +106,23 @@ public class InvoiceResourceIT {
      */
     public static Invoice createUpdatedEntity(EntityManager em) {
         Invoice invoice = new Invoice()
+            .code(UPDATED_CODE)
             .date(UPDATED_DATE)
             .detail(UPDATED_DETAIL)
             .status(UPDATED_STATUS)
             .paymentMethod(UPDATED_PAYMENT_METHOD)
             .paymentDate(UPDATED_PAYMENT_DATE)
             .paymentAmount(UPDATED_PAYMENT_AMOUNT);
+        // Add required entity
+        ProductOrder productOrder;
+        if (TestUtil.findAll(em, ProductOrder.class).isEmpty()) {
+            productOrder = ProductOrderResourceIT.createUpdatedEntity(em);
+            em.persist(productOrder);
+            em.flush();
+        } else {
+            productOrder = TestUtil.findAll(em, ProductOrder.class).get(0);
+        }
+        invoice.setOrder(productOrder);
         return invoice;
     }
 
@@ -119,6 +145,7 @@ public class InvoiceResourceIT {
         List<Invoice> invoiceList = invoiceRepository.findAll();
         assertThat(invoiceList).hasSize(databaseSizeBeforeCreate + 1);
         Invoice testInvoice = invoiceList.get(invoiceList.size() - 1);
+        assertThat(testInvoice.getCode()).isEqualTo(DEFAULT_CODE);
         assertThat(testInvoice.getDate()).isEqualTo(DEFAULT_DATE);
         assertThat(testInvoice.getDetail()).isEqualTo(DEFAULT_DETAIL);
         assertThat(testInvoice.getStatus()).isEqualTo(DEFAULT_STATUS);
@@ -146,6 +173,25 @@ public class InvoiceResourceIT {
         assertThat(invoiceList).hasSize(databaseSizeBeforeCreate);
     }
 
+
+    @Test
+    @Transactional
+    public void checkCodeIsRequired() throws Exception {
+        int databaseSizeBeforeTest = invoiceRepository.findAll().size();
+        // set the field null
+        invoice.setCode(null);
+
+        // Create the Invoice, which fails.
+
+
+        restInvoiceMockMvc.perform(post("/api/invoices")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(TestUtil.convertObjectToJsonBytes(invoice)))
+            .andExpect(status().isBadRequest());
+
+        List<Invoice> invoiceList = invoiceRepository.findAll();
+        assertThat(invoiceList).hasSize(databaseSizeBeforeTest);
+    }
 
     @Test
     @Transactional
@@ -253,6 +299,7 @@ public class InvoiceResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(invoice.getId().intValue())))
+            .andExpect(jsonPath("$.[*].code").value(hasItem(DEFAULT_CODE)))
             .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
             .andExpect(jsonPath("$.[*].detail").value(hasItem(DEFAULT_DETAIL)))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
@@ -272,6 +319,7 @@ public class InvoiceResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(invoice.getId().intValue()))
+            .andExpect(jsonPath("$.code").value(DEFAULT_CODE))
             .andExpect(jsonPath("$.date").value(DEFAULT_DATE.toString()))
             .andExpect(jsonPath("$.detail").value(DEFAULT_DETAIL))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
@@ -300,6 +348,7 @@ public class InvoiceResourceIT {
         // Disconnect from session so that the updates on updatedInvoice are not directly saved in db
         em.detach(updatedInvoice);
         updatedInvoice
+            .code(UPDATED_CODE)
             .date(UPDATED_DATE)
             .detail(UPDATED_DETAIL)
             .status(UPDATED_STATUS)
@@ -316,6 +365,7 @@ public class InvoiceResourceIT {
         List<Invoice> invoiceList = invoiceRepository.findAll();
         assertThat(invoiceList).hasSize(databaseSizeBeforeUpdate);
         Invoice testInvoice = invoiceList.get(invoiceList.size() - 1);
+        assertThat(testInvoice.getCode()).isEqualTo(UPDATED_CODE);
         assertThat(testInvoice.getDate()).isEqualTo(UPDATED_DATE);
         assertThat(testInvoice.getDetail()).isEqualTo(UPDATED_DETAIL);
         assertThat(testInvoice.getStatus()).isEqualTo(UPDATED_STATUS);

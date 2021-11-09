@@ -25,7 +25,7 @@ export class ShipmentUpdateComponent implements OnInit {
     trackingCode: [],
     date: [],
     details: [],
-    invoice: [],
+    invoice: [null, Validators.required],
   });
 
   constructor(
