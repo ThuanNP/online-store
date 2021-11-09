@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest(classes = StoreApp.class)
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(username = "admin", authorities = { "ROLE_ADMIN" })
 public class ShipmentResourceIT {
 
     private static final String DEFAULT_TRACKING_CODE = "AAAAAAAAAA";
@@ -59,14 +59,12 @@ public class ShipmentResourceIT {
     /**
      * Create an entity for this test.
      *
-     * This is a static method, as tests for other entities might also need it,
-     * if they test an entity which requires the current entity.
+     * This is a static method, as tests for other entities might also need it, if
+     * they test an entity which requires the current entity.
      */
     public static Shipment createEntity(EntityManager em) {
-        Shipment shipment = new Shipment()
-            .trackingCode(DEFAULT_TRACKING_CODE)
-            .date(DEFAULT_DATE)
-            .details(DEFAULT_DETAILS);
+        Shipment shipment = new Shipment().trackingCode(DEFAULT_TRACKING_CODE).date(DEFAULT_DATE)
+                .details(DEFAULT_DETAILS);
         // Add required entity
         Invoice invoice;
         if (TestUtil.findAll(em, Invoice.class).isEmpty()) {
@@ -79,17 +77,16 @@ public class ShipmentResourceIT {
         shipment.setInvoice(invoice);
         return shipment;
     }
+
     /**
      * Create an updated entity for this test.
      *
-     * This is a static method, as tests for other entities might also need it,
-     * if they test an entity which requires the current entity.
+     * This is a static method, as tests for other entities might also need it, if
+     * they test an entity which requires the current entity.
      */
     public static Shipment createUpdatedEntity(EntityManager em) {
-        Shipment shipment = new Shipment()
-            .trackingCode(UPDATED_TRACKING_CODE)
-            .date(UPDATED_DATE)
-            .details(UPDATED_DETAILS);
+        Shipment shipment = new Shipment().trackingCode(UPDATED_TRACKING_CODE).date(UPDATED_DATE)
+                .details(UPDATED_DETAILS);
         // Add required entity
         Invoice invoice;
         if (TestUtil.findAll(em, Invoice.class).isEmpty()) {
@@ -113,10 +110,8 @@ public class ShipmentResourceIT {
     public void createShipment() throws Exception {
         int databaseSizeBeforeCreate = shipmentRepository.findAll().size();
         // Create the Shipment
-        restShipmentMockMvc.perform(post("/api/shipments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(shipment)))
-            .andExpect(status().isCreated());
+        restShipmentMockMvc.perform(post("/api/shipments").contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.convertObjectToJsonBytes(shipment))).andExpect(status().isCreated());
 
         // Validate the Shipment in the database
         List<Shipment> shipmentList = shipmentRepository.findAll();
@@ -136,16 +131,13 @@ public class ShipmentResourceIT {
         shipment.setId(1L);
 
         // An entity with an existing ID cannot be created, so this API call must fail
-        restShipmentMockMvc.perform(post("/api/shipments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(shipment)))
-            .andExpect(status().isBadRequest());
+        restShipmentMockMvc.perform(post("/api/shipments").contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.convertObjectToJsonBytes(shipment))).andExpect(status().isBadRequest());
 
         // Validate the Shipment in the database
         List<Shipment> shipmentList = shipmentRepository.findAll();
         assertThat(shipmentList).hasSize(databaseSizeBeforeCreate);
     }
-
 
     @Test
     @Transactional
@@ -154,15 +146,14 @@ public class ShipmentResourceIT {
         shipmentRepository.saveAndFlush(shipment);
 
         // Get all the shipmentList
-        restShipmentMockMvc.perform(get("/api/shipments?sort=id,desc"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(shipment.getId().intValue())))
-            .andExpect(jsonPath("$.[*].trackingCode").value(hasItem(DEFAULT_TRACKING_CODE)))
-            .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
-            .andExpect(jsonPath("$.[*].details").value(hasItem(DEFAULT_DETAILS)));
+        restShipmentMockMvc.perform(get("/api/shipments?sort=id,desc")).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.[*].id").value(hasItem(shipment.getId().intValue())))
+                .andExpect(jsonPath("$.[*].trackingCode").value(hasItem(DEFAULT_TRACKING_CODE)))
+                .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
+                .andExpect(jsonPath("$.[*].details").value(hasItem(DEFAULT_DETAILS)));
     }
-    
+
     @Test
     @Transactional
     public void getShipment() throws Exception {
@@ -170,20 +161,19 @@ public class ShipmentResourceIT {
         shipmentRepository.saveAndFlush(shipment);
 
         // Get the shipment
-        restShipmentMockMvc.perform(get("/api/shipments/{id}", shipment.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.id").value(shipment.getId().intValue()))
-            .andExpect(jsonPath("$.trackingCode").value(DEFAULT_TRACKING_CODE))
-            .andExpect(jsonPath("$.date").value(DEFAULT_DATE.toString()))
-            .andExpect(jsonPath("$.details").value(DEFAULT_DETAILS));
+        restShipmentMockMvc.perform(get("/api/shipments/{id}", shipment.getId())).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.id").value(shipment.getId().intValue()))
+                .andExpect(jsonPath("$.trackingCode").value(DEFAULT_TRACKING_CODE))
+                .andExpect(jsonPath("$.date").value(DEFAULT_DATE.toString()))
+                .andExpect(jsonPath("$.details").value(DEFAULT_DETAILS));
     }
+
     @Test
     @Transactional
     public void getNonExistingShipment() throws Exception {
         // Get the shipment
-        restShipmentMockMvc.perform(get("/api/shipments/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
+        restShipmentMockMvc.perform(get("/api/shipments/{id}", Long.MAX_VALUE)).andExpect(status().isNotFound());
     }
 
     @Test
@@ -196,17 +186,13 @@ public class ShipmentResourceIT {
 
         // Update the shipment
         Shipment updatedShipment = shipmentRepository.findById(shipment.getId()).get();
-        // Disconnect from session so that the updates on updatedShipment are not directly saved in db
+        // Disconnect from session so that the updates on updatedShipment are not
+        // directly saved in db
         em.detach(updatedShipment);
-        updatedShipment
-            .trackingCode(UPDATED_TRACKING_CODE)
-            .date(UPDATED_DATE)
-            .details(UPDATED_DETAILS);
+        updatedShipment.trackingCode(UPDATED_TRACKING_CODE).date(UPDATED_DATE).details(UPDATED_DETAILS);
 
-        restShipmentMockMvc.perform(put("/api/shipments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(updatedShipment)))
-            .andExpect(status().isOk());
+        restShipmentMockMvc.perform(put("/api/shipments").contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.convertObjectToJsonBytes(updatedShipment))).andExpect(status().isOk());
 
         // Validate the Shipment in the database
         List<Shipment> shipmentList = shipmentRepository.findAll();
@@ -223,10 +209,8 @@ public class ShipmentResourceIT {
         int databaseSizeBeforeUpdate = shipmentRepository.findAll().size();
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restShipmentMockMvc.perform(put("/api/shipments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(shipment)))
-            .andExpect(status().isBadRequest());
+        restShipmentMockMvc.perform(put("/api/shipments").contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.convertObjectToJsonBytes(shipment))).andExpect(status().isBadRequest());
 
         // Validate the Shipment in the database
         List<Shipment> shipmentList = shipmentRepository.findAll();
@@ -242,9 +226,8 @@ public class ShipmentResourceIT {
         int databaseSizeBeforeDelete = shipmentRepository.findAll().size();
 
         // Delete the shipment
-        restShipmentMockMvc.perform(delete("/api/shipments/{id}", shipment.getId())
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNoContent());
+        restShipmentMockMvc.perform(delete("/api/shipments/{id}", shipment.getId()).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
         List<Shipment> shipmentList = shipmentRepository.findAll();

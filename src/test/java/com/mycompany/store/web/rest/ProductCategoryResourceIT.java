@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest(classes = StoreApp.class)
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(username = "admin", authorities = { "ROLE_ADMIN" })
 public class ProductCategoryResourceIT {
 
     private static final String DEFAULT_NAME = "AAAAAAAAAA";
@@ -53,25 +53,22 @@ public class ProductCategoryResourceIT {
     /**
      * Create an entity for this test.
      *
-     * This is a static method, as tests for other entities might also need it,
-     * if they test an entity which requires the current entity.
+     * This is a static method, as tests for other entities might also need it, if
+     * they test an entity which requires the current entity.
      */
     public static ProductCategory createEntity(EntityManager em) {
-        ProductCategory productCategory = new ProductCategory()
-            .name(DEFAULT_NAME)
-            .description(DEFAULT_DESCRIPTION);
+        ProductCategory productCategory = new ProductCategory().name(DEFAULT_NAME).description(DEFAULT_DESCRIPTION);
         return productCategory;
     }
+
     /**
      * Create an updated entity for this test.
      *
-     * This is a static method, as tests for other entities might also need it,
-     * if they test an entity which requires the current entity.
+     * This is a static method, as tests for other entities might also need it, if
+     * they test an entity which requires the current entity.
      */
     public static ProductCategory createUpdatedEntity(EntityManager em) {
-        ProductCategory productCategory = new ProductCategory()
-            .name(UPDATED_NAME)
-            .description(UPDATED_DESCRIPTION);
+        ProductCategory productCategory = new ProductCategory().name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
         return productCategory;
     }
 
@@ -85,10 +82,8 @@ public class ProductCategoryResourceIT {
     public void createProductCategory() throws Exception {
         int databaseSizeBeforeCreate = productCategoryRepository.findAll().size();
         // Create the ProductCategory
-        restProductCategoryMockMvc.perform(post("/api/product-categories")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(productCategory)))
-            .andExpect(status().isCreated());
+        restProductCategoryMockMvc.perform(post("/api/product-categories").contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.convertObjectToJsonBytes(productCategory))).andExpect(status().isCreated());
 
         // Validate the ProductCategory in the database
         List<ProductCategory> productCategoryList = productCategoryRepository.findAll();
@@ -107,16 +102,15 @@ public class ProductCategoryResourceIT {
         productCategory.setId(1L);
 
         // An entity with an existing ID cannot be created, so this API call must fail
-        restProductCategoryMockMvc.perform(post("/api/product-categories")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(productCategory)))
-            .andExpect(status().isBadRequest());
+        restProductCategoryMockMvc
+                .perform(post("/api/product-categories").contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtil.convertObjectToJsonBytes(productCategory)))
+                .andExpect(status().isBadRequest());
 
         // Validate the ProductCategory in the database
         List<ProductCategory> productCategoryList = productCategoryRepository.findAll();
         assertThat(productCategoryList).hasSize(databaseSizeBeforeCreate);
     }
-
 
     @Test
     @Transactional
@@ -127,11 +121,10 @@ public class ProductCategoryResourceIT {
 
         // Create the ProductCategory, which fails.
 
-
-        restProductCategoryMockMvc.perform(post("/api/product-categories")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(productCategory)))
-            .andExpect(status().isBadRequest());
+        restProductCategoryMockMvc
+                .perform(post("/api/product-categories").contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtil.convertObjectToJsonBytes(productCategory)))
+                .andExpect(status().isBadRequest());
 
         List<ProductCategory> productCategoryList = productCategoryRepository.findAll();
         assertThat(productCategoryList).hasSize(databaseSizeBeforeTest);
@@ -144,14 +137,13 @@ public class ProductCategoryResourceIT {
         productCategoryRepository.saveAndFlush(productCategory);
 
         // Get all the productCategoryList
-        restProductCategoryMockMvc.perform(get("/api/product-categories?sort=id,desc"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(productCategory.getId().intValue())))
-            .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
+        restProductCategoryMockMvc.perform(get("/api/product-categories?sort=id,desc")).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.[*].id").value(hasItem(productCategory.getId().intValue())))
+                .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
+                .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
     }
-    
+
     @Test
     @Transactional
     public void getProductCategory() throws Exception {
@@ -160,18 +152,18 @@ public class ProductCategoryResourceIT {
 
         // Get the productCategory
         restProductCategoryMockMvc.perform(get("/api/product-categories/{id}", productCategory.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.id").value(productCategory.getId().intValue()))
-            .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-            .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION));
+                .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.id").value(productCategory.getId().intValue()))
+                .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
+                .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION));
     }
+
     @Test
     @Transactional
     public void getNonExistingProductCategory() throws Exception {
         // Get the productCategory
         restProductCategoryMockMvc.perform(get("/api/product-categories/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -184,16 +176,13 @@ public class ProductCategoryResourceIT {
 
         // Update the productCategory
         ProductCategory updatedProductCategory = productCategoryRepository.findById(productCategory.getId()).get();
-        // Disconnect from session so that the updates on updatedProductCategory are not directly saved in db
+        // Disconnect from session so that the updates on updatedProductCategory are not
+        // directly saved in db
         em.detach(updatedProductCategory);
-        updatedProductCategory
-            .name(UPDATED_NAME)
-            .description(UPDATED_DESCRIPTION);
+        updatedProductCategory.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
 
-        restProductCategoryMockMvc.perform(put("/api/product-categories")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(updatedProductCategory)))
-            .andExpect(status().isOk());
+        restProductCategoryMockMvc.perform(put("/api/product-categories").contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtil.convertObjectToJsonBytes(updatedProductCategory))).andExpect(status().isOk());
 
         // Validate the ProductCategory in the database
         List<ProductCategory> productCategoryList = productCategoryRepository.findAll();
@@ -209,10 +198,10 @@ public class ProductCategoryResourceIT {
         int databaseSizeBeforeUpdate = productCategoryRepository.findAll().size();
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restProductCategoryMockMvc.perform(put("/api/product-categories")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(TestUtil.convertObjectToJsonBytes(productCategory)))
-            .andExpect(status().isBadRequest());
+        restProductCategoryMockMvc
+                .perform(put("/api/product-categories").contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtil.convertObjectToJsonBytes(productCategory)))
+                .andExpect(status().isBadRequest());
 
         // Validate the ProductCategory in the database
         List<ProductCategory> productCategoryList = productCategoryRepository.findAll();
@@ -228,9 +217,9 @@ public class ProductCategoryResourceIT {
         int databaseSizeBeforeDelete = productCategoryRepository.findAll().size();
 
         // Delete the productCategory
-        restProductCategoryMockMvc.perform(delete("/api/product-categories/{id}", productCategory.getId())
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNoContent());
+        restProductCategoryMockMvc.perform(
+                delete("/api/product-categories/{id}", productCategory.getId()).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
         List<ProductCategory> productCategoryList = productCategoryRepository.findAll();
