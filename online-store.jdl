@@ -1,38 +1,35 @@
-/** 
-* Product sold by the online store
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Product sold by the online store
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 entity Product {
-	name String required
+    name String required
     description String
     price BigDecimal required min(0)
     size Size required
     image ImageBlob
 }
-
-/** 
-* Product size enum
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Product size enum
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 enum Size {
-	S, M, L, XL, XXL
+    S, M, L, XL, XXL
 }
-
-/** 
-* Product category entity
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Product category entity
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 entity ProductCategory {
-	name String required
+    name String required
     description String
 }
-
-/** 
-* Customer entity
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Customer entity
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 entity Customer {
-	firstName String
+    firstName String
 	lastName String
 	gender Gender required
 	email String required pattern(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
@@ -42,117 +39,94 @@ entity Customer {
     city String required
     country String required
 }
-
-/** 
-* Customer gender enum
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Customer gender enum
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 enum Gender {
-	MALE, FEMALE, OTHER
+    MALE, FEMALE, OTHER
 }
-
-/** 
-* Product Order entity
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
-entity ProductOrder {
-	placeDate Instant required
-    status OrderStatus required
-    code String required
-}
-
-/** 
-* Order status enum
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Order status enum
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 enum OrderStatus {
-	COMPLETED, PENDING, CANCELLED
+    COMPLETED, PENDING, CANCELLED
 }
-
-/** 
-* Product order entity
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Product order entity
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 entity ProductOrder {
-	placeDate Instant required
+    placeDate Instant required
     status OrderStatus required
     code String required
 }
-
-/** 
-* Order item entity
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Order item entity
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 entity OrderItem {
-	quantity Integer required min(0)
+    quantity Integer required min(0)
 	totalPrice BigDecimal required min(0)
     status OrderItemStatus required
 }
-
-/** 
-* Order item status enum
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Order item status enum
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 enum OrderItemStatus {
-	AVAILABLE, OUT_OF_STOCK, BACK_ORDER
+    AVAILABLE, OUT_OF_STOCK, BACK_ORDER
 }
-
-/** 
-* Invoice entity
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Invoice entity
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 entity Invoice {
-	date Instant required
+    code String required
+    date Instant required
     detail String
     status InvoiceStatus required
     paymentMethod PaymentMethod required
     paymentDate Instant required
     paymentAmount BigDecimal required
 }
-
-/** 
-* Invoice item status enum
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Invoice item status enum
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 enum InvoiceStatus {
-	PAID, ISSUED, CANCELLED
+    PAID, ISSUED, CANCELLED
 }
-
-/** 
-* Invoice Payment method enum
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Invoice Payment method enum
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 enum PaymentMethod {
-	CREDIT_CARD, CASH_ON_DELIVERY, PAYPAL
+    CREDIT_CARD, CASH_ON_DELIVERY, PAYPAL
 }
-
-/** 
-* Shipment entity
-* @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
-*/
+/**
+ * Shipment entity
+ * @author ThuanNP, ThuanPK, QuyenHVT, DanNQT, Hoan2NT.
+ */
 entity Shipment {
-	trackingCode String
+    trackingCode String
     date Instant
     details String
 }
-
 relationship OneToOne {
-	Customer{user} to User
+    Customer{user(login) required} to User
 }
-
 relationship ManyToOne {
-	OrderItem{product} to Product
+    OrderItem{product(name) required} to Product
 }
-
 relationship OneToMany {
-	Customer{order} to ProductOrder{customer}
-    ProductOrder{orderItem} to OrderItem{order}
-    ProductOrder{invoice} to Invoice{order}
-    Invoice{shipment} to Shipment{invoice}
-    ProductCategory{product} to Product{productCategory}
+    Customer{order} to ProductOrder{customer(email) required}
+    ProductOrder{orderItem} to OrderItem{order(code) required}
+    ProductOrder{invoice} to Invoice{order(code) required}
+    Invoice{shipment} to Shipment{invoice(code) required}
+    ProductCategory{product} to Product{productCategory(name)}
 }
-
 paginate all with pagination
 service all with serviceClass
 paginate Product, Customer, ProductOrder, Invoice, Shipment, OrderItem with pagination
-
