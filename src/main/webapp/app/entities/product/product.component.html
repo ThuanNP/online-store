@@ -18,11 +18,11 @@
     <div class="alert alert-warning" id="no-result" *ngIf="products?.length === 0">
         <span jhiTranslate="storeApp.product.home.notFound">No products found</span>
     </div>
-
+    <br />
     <div class="mb-2 d-flex justify-content-end align-items-center">
         <!-- TODO: implement search server-side filtering using the JPA -->
         <span class="mr-2 col-2">Filter by name</span>
-        <input type="search" class="form-control col-6" [(ngModel)]="filter">
+        <input type="search" class="form-control col-5" [(ngModel)]="filter">
         <span class="mx-2 col-1">Sort by</span>
         <div class="btn-group" role="group" jhiSort [(predicate)]="predicate" [(ascending)]="ascending"
             [callback]="loadPage.bind(this)">
